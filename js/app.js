@@ -72,8 +72,10 @@ function onMIDISuccess(midiAccess) {
   // });
 }
 
-navigator.requestMIDIAccess()
-.then(onMIDISuccess)
+if(navigator.requestMIDIAccess) {
+  navigator.requestMIDIAccess()
+  .then(onMIDISuccess)
+}
 
 
 
