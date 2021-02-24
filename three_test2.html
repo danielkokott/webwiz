@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <title>three.js webgl - multiple elements with text</title>
+  <title>ballcube</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
   <link type="text/css" rel="stylesheet" href="css/main.css">
@@ -108,12 +108,13 @@
     let scene, t, canvas, camera, renderer;
 
 
-    let balls = 20;
+    let balls = 10;
     let size = .60;
 
 
     BeatStep.cc[10] = function(v) {
       balls = v;
+      setup();
     }
 
     BeatStep.cc[74] = function(v) {
@@ -133,48 +134,56 @@
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
 
-    const geometry0 = new THREE.BufferGeometry();
-    const geometry1 = new THREE.BufferGeometry();
+    let geometry0
+    let geometry1
+    
+    function setup() {
 
-    const vertices = [];
-
-    const range = balls / 2;
-
-    for (let i = - range; i <= range; i++) {
-
-      for (let j = - range; j <= range; j++) {
-
-        for (let k = - range; k <= range; k++) {
-
-          vertices.push(i, j, k);
-          // console.log('vertices', vertices.length, i, j, k)
-
+      geometry0 = new THREE.BufferGeometry();
+      geometry1 = new THREE.BufferGeometry();
+  
+      const vertices = [];
+  
+      const range = balls / 2;
+  
+      for (let i = - range; i <= range; i++) {
+  
+        for (let j = - range; j <= range; j++) {
+  
+          for (let k = - range; k <= range; k++) {
+  
+            vertices.push(i, j, k);
+            // console.log('vertices', vertices.length, i, j, k)
+  
+          }
         }
       }
+
+      console.log('vv', vertices)
+      geometry0.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      geometry1.setAttribute('position', new THREE.Float32BufferAttribute(vertices.slice(), 3));
+  
+      const index = Math.floor(colors.length * Math.random());
+  
+      const canvas2 = document.createElement('canvas');
+      canvas2.width = 128;
+      canvas2.height = 128;
+      const context = canvas2.getContext('2d');
+      context.arc(64, 64, 64, 0, 2 * Math.PI);
+      context.fillStyle = colors[index];
+      context.fill();
+      const texture = new THREE.CanvasTexture(canvas2);
+  
+      const material = new THREE.PointsMaterial({ size: size, map: texture, transparent: true, alphaTest: 0.1 });
+  
+      scene.add(new THREE.Points(geometry0, material));
+  
+      // const camera = new THREE.PerspectiveCamera( 75, 1, 0.1, 100 );
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 0, 1.2 * balls);
     }
 
-    geometry0.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    geometry1.setAttribute('position', new THREE.Float32BufferAttribute(vertices.slice(), 3));
-
-    const index = Math.floor(colors.length * Math.random());
-
-    const canvas2 = document.createElement('canvas');
-    canvas2.width = 128;
-    canvas2.height = 128;
-    const context = canvas2.getContext('2d');
-    context.arc(64, 64, 64, 0, 2 * Math.PI);
-    context.fillStyle = colors[index];
-    context.fill();
-    const texture = new THREE.CanvasTexture(canvas2);
-
-    const material = new THREE.PointsMaterial({ size: size, map: texture, transparent: true, alphaTest: 0.1 });
-
-    scene.add(new THREE.Points(geometry0, material));
-
-    // const camera = new THREE.PerspectiveCamera( 75, 1, 0.1, 100 );
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, 1.2 * balls);
-
+    setup();
     t = 0;
     animate();
 
@@ -182,6 +191,9 @@
     function animate() {
 
       requestAnimationFrame(animate);
+
+
+
 
       // updateSize
       if (canvas.width !== canvas.clientWidth || canvas.height != canvas.clientHeight) {
@@ -192,6 +204,7 @@
 
       const points = scene.children[0];
       const position = points.geometry.attributes.position;
+      // console.log('pos', position.count)
 
       const point = new THREE.Vector3();
       const offset = new THREE.Vector3();

@@ -5,23 +5,24 @@
   <meta charset="utf-8">
   <title>My first three.js app</title>
   <style>
-			body {
-				background-color: #fff;
-				color: #444;
-				margin: auto;
-				padding: .5in;
-				max-width: 7in;
-				text-align: justify;
-			}
+    body {
+      background-color: #fff;
+      color: #444;
+      margin: auto;
+      padding: .5in;
+      max-width: 7in;
+      text-align: justify;
+    }
 
-      #c {
-				position: fixed;
-				left: 0px; top: 0px;
-				width: 100%;
-				height: 100%;
-				background-color: #fff;
-				z-index: -1;
-			}
+    #c {
+      position: fixed;
+      left: 0px;
+      top: 0px;
+      width: 100%;
+      height: 100%;
+      background-color: #fff;
+      z-index: -1;
+    }
   </style>
   <script src="js/libs/three.js"></script>
 </head>
@@ -31,41 +32,170 @@
   <canvas id="c"></canvas>
 
   <script>
-    canvas = document.getElementById( 'c' );
+    canvas = document.getElementById('c');
 
-    
+
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0xffffff );
+    scene.background = new THREE.Color(0xffffff);
 
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+    // camera.position.set(0, 0, 17);
+    camera.position.set( 0, 0, 600 );
 
-    renderer = new THREE.WebGLRenderer( { canvas, antialias: false } );
-    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize( window.innerWidth, window.innerHeight );
 
-    const geometrya = new THREE.SphereGeometry( 1 , 32, 32 );
+    window.addEventListener('resize', () => {
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+    });
+
+    const geometrya = new THREE.SphereGeometry(1, 32, 32);
     // const geometrya = new THREE.SphereGeometry();
-    const materiala = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-    const sphere = new THREE.Mesh( geometrya, materiala );
-    scene.add( sphere );
+    // const materiala = new THREE.MeshBasicMaterial( {color: 0x00cc00} );
+    const materiala = new THREE.MeshPhongMaterial({ color: 0x00cc00 });
 
-    const geometry = new THREE.BoxGeometry();
+    const square_size = 5;
+    // 0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144 ...
+    const balls_count = square_size * square_size;
+
+    const is_even = balls_count % 2 === 0;
+
+    for (let i = 1; i <= square_size; i++) {
+      for (let j = 1; j <= square_size; j++) {
+        for (let k = 1; k <= square_size; k++) {
+          var sphere = new THREE.Mesh(geometrya, materiala);
+          sphere.position.x = i * 2;
+          sphere.position.y = k * 2;
+          sphere.position.z = j * 2;
+          scene.add(sphere);
+          console.log('hh')
+        }
+      }
+    }
+
+
+    const loader = new THREE.FontLoader();
+    loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
+
+      const color = 0x006699;
+
+      const matDark = new THREE.LineBasicMaterial({
+        color: color,
+        side: THREE.DoubleSide
+      });
+
+      const matLite = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.4,
+        side: THREE.DoubleSide
+      });
+
+      const message = "   Three.js\nSimple text.";
+
+      const shapes = font.generateShapes(message, 100);
+
+      const geometry = new THREE.ShapeGeometry(shapes);
+
+      geometry.computeBoundingBox();
+
+      const xMid = - 0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+
+      geometry.translate(xMid, 0, 0);
+
+      // make shape ( N.B. edge view not visible )
+
+      const text = new THREE.Mesh(geometry, matLite);
+      text.position.z = - 150;
+      scene.add(text);
+
+      // make line shape ( N.B. edge view remains visible )
+
+      // const holeShapes = [];
+
+      // for (let i = 0; i < shapes.length; i++) {
+
+      //   const shape = shapes[i];
+
+      //   if (shape.holes && shape.holes.length > 0) {
+
+      //     for (let j = 0; j < shape.holes.length; j++) {
+
+      //       const hole = shape.holes[j];
+      //       holeShapes.push(hole);
+
+      //     }
+
+      //   }
+
+      // }
+
+      // shapes.push.apply(shapes, holeShapes);
+
+      // const lineText = new THREE.Object3D();
+
+      // for (let i = 0; i < shapes.length; i++) {
+
+      //   const shape = shapes[i];
+
+      //   const points = shape.getPoints();
+
+      //   const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+      //   geometry.translate(xMid, 0.01, 0.+1);
+
+      //   const lineMesh = new THREE.Line(geometry, matDark);
+      //   lineText.add(lineMesh);
+
+      // }
+
+      // scene.add(lineText);
+
+    }); //end load function
+
+
+    const color = 0xFFFFFF;
+    const intensity = 1;
+    const light = new THREE.DirectionalLight(color, intensity);
+    light.position.set(-1, 2, 4);
+    scene.add(light);
+
+
+    // const geometry = new THREE.BoxGeometry();
     // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
+    // const cube = new THREE.Mesh(geometry, material);
     // scene.add(cube);
 
-    camera.position.z = 5;
+    function getRandomArbitrary(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function placeBalls() {
+      const { children } = scene;
+      children.forEach((ball, index) => {
+        // ball.position.x = getRandomArbitrary(0, 3)
+        // ball.position.y = getRandomArbitrary(0, 3)
+        // ball.position.z = getRandomArbitrary(0, 3)
+      });
+    }
+
+
+    let frame = 1;
+    placeBalls()
 
     function animate() {
       requestAnimationFrame(animate);
-      sphere.position.x += 0.01;
-      sphere.rotation.x += 0.01;
-      sphere.rotation.y += 0.01;
-      cube.rotation.x += 0.01;
-      cube.rotation.y += 0.01;
-      renderer.render(scene, camera);
 
+      // sphere.position.x += 0.01;
+      // sphere.rotation.x += 0.01;
+      // sphere.rotation.y += 0.01;
+      // cube.rotation.x += 0.01;
+      // cube.rotation.y += 0.01;
+      renderer.render(scene, camera);
+      frame = frame % 10000 === 0 ? 1 : ++frame;
     }
+
     animate();
   </script>
 </body>
